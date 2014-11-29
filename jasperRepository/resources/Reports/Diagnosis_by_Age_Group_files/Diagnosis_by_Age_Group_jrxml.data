@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Diagnosis by Age Group" language="groovy" pageWidth="595" pageHeight="400" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="137346fb-6aa7-42fe-a5d1-e6856ea047b9">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#8FAFCC">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#CFDBE6">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="By Gender" uuid="7a794cd1-f623-48cd-ba7e-cfd4f08d58de">
+		<parameter name="Inner_from_date" class="java.util.Date"/>
+		<parameter name="Inner_to_date" class="java.util.Date"/>
+		<parameter name="Inner_Diagnosis" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[select count(o.person_id), p.gender from obs o
+inner join concept c on o.value_coded = c.concept_id
+inner join concept_name cn on c.concept_id = cn.concept_id AND cn.concept_name_type = 'FULLY_SPECIFIED'
+inner join person p on p.person_id = o.person_id
+where cn.name = $P{Inner_Diagnosis}
+AND date(o.obs_datetime) >= $P{Inner_from_date} AND  date(o.obs_datetime) <=  $P{Inner_to_date}
+group by p.gender;]]>
+		</queryString>
+		<field name="count(o.person_id)" class="java.lang.Long"/>
+		<field name="gender" class="java.lang.String"/>
+		<group name="gender">
+			<groupExpression><![CDATA[$F{gender}]]></groupExpression>
+		</group>
+	</subDataset>
+	<parameter name="from_date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date((new Date()).getTime()-(Calendar.getInstance().get(Calendar.DAY_OF_MONTH)-1)*24*60*60*1000L)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="to_date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Select_Diagnosis" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select count(o.person_id), "Up to 5" from obs o
+inner join concept c on o.value_coded = c.concept_id
+inner join concept_name cn on c.concept_id = cn.concept_id AND cn.concept_name_type = 'FULLY_SPECIFIED'
+inner join person p on p.person_id = o.person_id
+where cn.name = $P{Select_Diagnosis}
+AND date(o.obs_datetime) >= $P{from_date} AND  date(o.obs_datetime) <= $P{to_date}
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) < 5
+
+UNION
+
+select count(o.person_id), "5 to 12" from obs o
+inner join concept c on o.value_coded = c.concept_id
+inner join concept_name cn on c.concept_id = cn.concept_id AND cn.concept_name_type = 'FULLY_SPECIFIED'
+inner join person p on p.person_id = o.person_id
+where cn.name = $P{Select_Diagnosis}
+AND date(o.obs_datetime) >= $P{from_date} AND  date(o.obs_datetime) <= $P{to_date}
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) >= 5
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) < 12
+
+
+UNION
+
+select count(o.person_id), "12 to 18" from obs o
+inner join concept c on o.value_coded = c.concept_id
+inner join concept_name cn on c.concept_id = cn.concept_id AND cn.concept_name_type = 'FULLY_SPECIFIED'
+inner join person p on p.person_id = o.person_id
+where cn.name = $P{Select_Diagnosis}
+AND date(o.obs_datetime) >= $P{from_date} AND  date(o.obs_datetime) <= $P{to_date}
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) >= 12
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) < 18
+
+
+UNION
+
+select count(o.person_id), "18 to 45" from obs o
+inner join concept c on o.value_coded = c.concept_id
+inner join concept_name cn on c.concept_id = cn.concept_id AND cn.concept_name_type = 'FULLY_SPECIFIED'
+inner join person p on p.person_id = o.person_id
+where cn.name = $P{Select_Diagnosis}
+AND date(o.obs_datetime) >= $P{from_date} AND  date(o.obs_datetime) <= $P{to_date}
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) >= 18
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) < 45
+
+
+UNION
+
+select count(o.person_id), "Above 45" from obs o
+inner join concept c on o.value_coded = c.concept_id
+inner join concept_name cn on c.concept_id = cn.concept_id AND cn.concept_name_type = 'FULLY_SPECIFIED'
+inner join person p on p.person_id = o.person_id
+where cn.name = $P{Select_Diagnosis}
+AND date(o.obs_datetime) >= $P{from_date} AND  date(o.obs_datetime) <= $P{to_date}
+AND TIMESTAMPDIFF(YEAR,p.birthdate,$P{from_date}) >= 45]]>
+	</queryString>
+	<field name="count(o.person_id)" class="java.lang.Long"/>
+	<field name="Up to 5" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="36" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="527e8a16-adf3-4262-8325-d9ae7b98d6e5" x="154" y="7" width="205" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Diagnosis by Age Group]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="64" splitType="Stretch">
+			<textField>
+				<reportElement uuid="81cbc930-669e-4bbc-bf9b-2fb93f81cd16" x="330" y="13" width="215" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Select_Diagnosis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="a091a09a-38f1-42cf-a7f4-7141b8d2bb3e" x="110" y="13" width="220" height="20"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Age wise break up of patients for : ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="03e5e144-add7-47b0-839e-4576aacdd313" x="132" y="44" width="41" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<text><![CDATA[From: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="03e5e144-add7-47b0-839e-4576aacdd313" x="265" y="44" width="41" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<text><![CDATA[To: ]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement uuid="e2c87a2d-e263-40c8-9ec0-eb64999dcc62" x="173" y="44" width="77" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{from_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement uuid="6aa4fe93-e021-43a8-a151-d93635ccb7d7" x="307" y="44" width="62" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{to_date}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="36" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="e1da6079-b0ba-4600-80ba-e862ce5eecb3" x="154" y="16" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Age Group]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="e9f2e70b-49e2-4227-8202-c8253bd8982a" x="259" y="16" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No of cases]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="24" splitType="Stretch">
+			<textField>
+				<reportElement uuid="a2fa6449-16ed-4334-a32a-dd05768c62f7" x="157" y="0" width="100" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{Up to 5}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="c7933e02-2ff9-4c89-adc1-f67a18e7497a" x="259" y="0" width="68" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{count(o.person_id)}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="104" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="c4277446-01df-4dbb-a9bf-a7e8914e99e8" x="240" y="82" width="212" height="20" forecolor="#000000"/>
+				<textElement verticalAlignment="Middle">
+					<font isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Created by Bahmni via Jasper Reports on:]]></text>
+			</staticText>
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement uuid="40bc3366-6f31-4738-b500-f203981a3037" x="452" y="82" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement uuid="6653f6be-41d1-489c-85fe-80022e60625c" key="table" style="table" x="157" y="0" width="128" height="31"/>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="By Gender" uuid="1df447a8-534c-4b69-b1c4-77bc8ec89563">
+						<datasetParameter name="Inner_from_date">
+							<datasetParameterExpression><![CDATA[$P{from_date}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Inner_to_date">
+							<datasetParameterExpression><![CDATA[$P{to_date}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="Inner_Diagnosis">
+							<datasetParameterExpression><![CDATA[$P{Select_Diagnosis}]]></datasetParameterExpression>
+						</datasetParameter>
+					</datasetRun>
+					<jr:column uuid="a4d38c1e-4685-4e56-b4dd-330519a507e8" width="90">
+						<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement uuid="3c9c0e00-0af5-4f65-a030-936e4e7c3ff7" x="0" y="0" width="90" height="30"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Gender]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table_TD" height="20" rowSpan="1">
+							<textField>
+								<reportElement uuid="207ba85e-a4e5-4f97-bf08-d7653951997d" x="0" y="0" width="90" height="20"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{gender}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column uuid="b44a47f4-a61d-46f4-b5eb-6287954f1661" width="90">
+						<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement uuid="0e9f0ae8-0fee-4432-a5ec-763abb756ece" x="0" y="0" width="90" height="30"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[No of cases]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table_TD" height="20" rowSpan="1">
+							<textField>
+								<reportElement uuid="9c489b43-4053-4fe5-97fd-a90bab9f839f" x="0" y="0" width="90" height="20"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{count(o.person_id)}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+	</pageFooter>
+</jasperReport>
